@@ -1,4 +1,4 @@
-import { Float, Edges, Text, TextProps, useGLTF } from "@react-three/drei";
+import { Edges, Text, TextProps } from "@react-three/drei";
 import { ThreeEvent } from "@react-three/fiber";
 import gsap from "gsap";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -18,17 +18,17 @@ interface ProjectTileProps {
 }
 
 // Subcomponent to dynamically load the custom project models and float them
-function FloatingProjectModel({ path, scale }: { path: string; scale: number }) {
-  const { scene } = useGLTF(path);
-  // Clone to avoid mutation sharing issues
-  const clonedScene = useMemo(() => scene.clone(), [scene]);
-  
-  return (
-    <Float floatIntensity={2} speed={3} rotationIntensity={1}>
-      <primitive object={clonedScene} scale={scale} position={[0, -0.5, 0.4]} />
-    </Float>
-  );
-}
+// function FloatingProjectModel({ path, scale }: { path: string; scale: number }) {
+//   const { scene } = useGLTF(path);
+//   // Clone to avoid mutation sharing issues
+//   const clonedScene = useMemo(() => scene.clone(), [scene]);
+//   
+//   return (
+//     <Float floatIntensity={2} speed={3} rotationIntensity={1}>
+//       <primitive object={clonedScene} scale={scale} position={[0, -0.5, 0.4]} />
+//     </Float>
+//   );
+// }
 
 const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: ProjectTileProps) => {
   const projectRef = useRef<THREE.Group>(null);
@@ -57,7 +57,6 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: 
     const dateGroup = projectRef.current.children.find(c => c.name === 'dateGrp');
     const textBox = projectRef.current.children.find(c => c.name === 'textBox');
     const button = projectRef.current.children.find(c => c.name === 'buttonGrp');
-    const modelGrp = projectRef.current.children.find(c => c.name === 'modelGrp');
     if(!mesh || !title || !dateGroup || !textBox) return;
 
     hoverAnimRef.current = gsap.timeline();
@@ -78,7 +77,7 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: 
       .to((mesh as THREE.Mesh).material, { opacity: hovered ? 0.95 : 0.3 }, 0)
       .to(mesh.position, { y: hovered ? 1 : 0 }, 0);
 
-    if (project.url && button) {
+    if (project.url && project.url !== '#' && button) {
       hoverAnimRef.current
         .to(button.scale, { y: hovered ? 1 : 0, x: hovered ? 1 : 0 }, 0)
         .to(button.position, { z: hovered ? 0.3 : -1 }, 0);
@@ -103,7 +102,7 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: 
 
   const handleClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
-    if (!project.url) return;
+    if (!project.url || project.url === '#') return;
     const button = e.eventObject;
     gsap.to(button.position, { z: 0, duration: 0.1 })
       .then(() => gsap.to(button.position, { z: 0.3, duration: 0.3 }));
@@ -114,7 +113,10 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: 
     <group
       position={position}
       rotation={rotation}
-      onClick={onClick}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
       onPointerOver={() => !isMobile && isProjectSectionActive && setHovered(true)}
       onPointerOut={() => !isMobile && isProjectSectionActive && setHovered(false)}>
       <group ref={projectRef}>
@@ -154,7 +156,7 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: 
           fontSize={0.2}>
           {project.subtext}
         </Text>
-        {project.url && (
+        {project.url && project.url !== '#' && (
           <group name='buttonGrp'
             position={[1.3, -0.6, -1]}
             scale={[0, 0, 1]}

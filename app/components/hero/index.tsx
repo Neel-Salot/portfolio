@@ -39,12 +39,12 @@ const Hero = () => {
 
   return (
     <>
-      <Text position={[0, 2, -10]} {...fontProps} ref={titleRef} color={textColor}>Hi, I am Neel Salot.</Text>
-      <Text position={[0, -2, -10]} {...fontProps} fontSize={0.6} color={theme.type === 'light' ? '#6b21a8' : '#9c6fb8'}>Web Developer & UI/UX Designer</Text>
+      <Text position={[0, 2, -10]} {...fontProps} ref={titleRef} color={textColor}>NEEL SALOT</Text>
+      <Text position={[0, -2, -10]} font="./soria-font.ttf" fontSize={0.6} color={theme.type === 'light' ? '#3b82f6' : '#22d3ee'}>Developer building experimental tech systems.</Text>
       <StarsContainer />
       <CloudContainer/>
       <group position={[0, -25, 5.69]}>
-        <pointLight castShadow position={[1, 1, -2.5]} intensity={60} distance={10}/>
+        <pointLight castShadow position={[1, 1, -2.5]} intensity={60} distance={10} color={theme.type === 'light' ? '#ffffff' : '#8b5cf6'} />
         <WindowModel receiveShadow/>
         <TextWindow/>
       </group>

@@ -1,5 +1,5 @@
 import { Svg, Text, useCursor, useScroll } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, ThreeEvent } from "@react-three/fiber";
 import gsap from "gsap";
 import { useEffect, useRef, useState } from "react";
 import { isMobile } from "react-device-detect";
@@ -12,11 +12,11 @@ const FooterLinkItem = ({ link }: { link: FooterLink }) => {
   const [hovered, setHovered] = useState(false);
   const onPointerOver = () => setHovered(true);
   const onPointerOut = () => setHovered(false);
-  const onClick = (e: any) => {
+  const onClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
     window.open(link.url, '_blank');
   };
-  const onPointerMove = (e: any) => {
+  const onPointerMove = (e: ThreeEvent<MouseEvent>) => {
     if (isMobile) return;
     const hoverDiv = document.getElementById(`footer-link-${link.name}`);
     gsap.to(hoverDiv, {

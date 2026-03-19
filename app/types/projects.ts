@@ -9,4 +9,6 @@ export interface Project {
   subtext: string;
   url?: string;
   urls?: ProjectUrl[];
+  modelPath?: string;
+  modelScale?: number;
 }
