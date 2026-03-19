@@ -12,8 +12,11 @@ const FooterLinkItem = ({ link }: { link: FooterLink }) => {
   const [hovered, setHovered] = useState(false);
   const onPointerOver = () => setHovered(true);
   const onPointerOut = () => setHovered(false);
-  const onClick = () => window.open(link.url, '_blank');
-  const onPointerMove = (e: MouseEvent) => {
+  const onClick = (e: any) => {
+    e.stopPropagation();
+    window.open(link.url, '_blank');
+  };
+  const onPointerMove = (e: any) => {
     if (isMobile) return;
     const hoverDiv = document.getElementById(`footer-link-${link.name}`);
     gsap.to(hoverDiv, {

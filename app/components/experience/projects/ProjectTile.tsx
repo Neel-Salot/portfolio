@@ -1,4 +1,4 @@
-import { Edges, Text, TextProps } from "@react-three/drei";
+import { Float, Edges, Text, TextProps, useGLTF } from "@react-three/drei";
 import { ThreeEvent } from "@react-three/fiber";
 import gsap from "gsap";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -15,6 +15,19 @@ interface ProjectTileProps {
   rotation: [number, number, number];
   activeId: number | null;
   onClick: () => void;
+}
+
+// Subcomponent to dynamically load the custom project models and float them
+function FloatingProjectModel({ path, scale }: { path: string; scale: number }) {
+  const { scene } = useGLTF(path);
+  // Clone to avoid mutation sharing issues
+  const clonedScene = useMemo(() => scene.clone(), [scene]);
+  
+  return (
+    <Float floatIntensity={2} speed={3} rotationIntensity={1}>
+      <primitive object={clonedScene} scale={scale} position={[0, -0.5, 0.4]} />
+    </Float>
+  );
 }
 
 const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: ProjectTileProps) => {
@@ -39,7 +52,13 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: 
     if (!projectRef.current) return;
     hoverAnimRef.current?.kill();
 
-    const [mesh, title, dateGroup, textBox, button] = projectRef.current.children;
+    const mesh = projectRef.current.children.find(c => c.name === 'bgMesh');
+    const title = projectRef.current.children.find(c => c.name === 'titleText');
+    const dateGroup = projectRef.current.children.find(c => c.name === 'dateGrp');
+    const textBox = projectRef.current.children.find(c => c.name === 'textBox');
+    const button = projectRef.current.children.find(c => c.name === 'buttonGrp');
+    const modelGrp = projectRef.current.children.find(c => c.name === 'modelGrp');
+    if(!mesh || !title || !dateGroup || !textBox) return;
 
     hoverAnimRef.current = gsap.timeline();
     hoverAnimRef.current
@@ -59,7 +78,7 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: 
       .to((mesh as THREE.Mesh).material, { opacity: hovered ? 0.95 : 0.3 }, 0)
       .to(mesh.position, { y: hovered ? 1 : 0 }, 0);
 
-    if (project.url) {
+    if (project.url && button) {
       hoverAnimRef.current
         .to(button.scale, { y: hovered ? 1 : 0, x: hovered ? 1 : 0 }, 0)
         .to(button.position, { z: hovered ? 0.3 : -1 }, 0);
@@ -88,7 +107,7 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: 
     const button = e.eventObject;
     gsap.to(button.position, { z: 0, duration: 0.1 })
       .then(() => gsap.to(button.position, { z: 0.3, duration: 0.3 }));
-    setTimeout(() => window.open(project.url, '_blank'), 50);
+    window.open(project.url, '_blank');
   };
 
   return (
@@ -99,14 +118,14 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: 
       onPointerOver={() => !isMobile && isProjectSectionActive && setHovered(true)}
       onPointerOut={() => !isMobile && isProjectSectionActive && setHovered(false)}>
       <group ref={projectRef}>
-        <mesh>
+        <mesh name='bgMesh'>
           <planeGeometry args={[4.2, 2, 1]} />
           <meshBasicMaterial color="#FFF" transparent opacity={0.3}/>
           {/* <meshPhysicalMaterial transmission={1} roughness={0.3} /> */}
           <Edges color="black" lineWidth={1.5} />
         </mesh>
         <Text
-          {...titleProps}
+          name='titleText' {...titleProps}
           position={[-1.9, -0.8, 0.101]}
           anchorX="left"
           anchorY="bottom"
@@ -114,8 +133,8 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: 
           fontSize={0.8}>
           {project.title}
         </Text>
-        <group position={[-1.25, 1.4, 0.01]}>
-          <mesh>
+        <group name='dateGrp' position={[-1.25, 1.4, 0.01]}>
+          <mesh name='bgMesh'>
             <planeGeometry args={[1.7, 0.4, 1]} />
             <meshBasicMaterial color="#777" opacity={0} wireframe />
             <Edges color="black" lineWidth={1} />
@@ -128,7 +147,7 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: 
           </Text>
         </group>
         <Text
-          {...subtitleProps}
+          name='textBox' {...subtitleProps}
           maxWidth={3.8}
           position={[-1.9, 2.3, 0.1]}
           // scale={[0, 0, 1]}
@@ -136,13 +155,13 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: 
           {project.subtext}
         </Text>
         {project.url && (
-          <group
+          <group name='buttonGrp'
             position={[1.3, -0.6, -1]}
             scale={[0, 0, 1]}
             onClick={handleClick}
             onPointerOver={() => document.body.style.cursor = 'pointer'}
             onPointerOut={() => document.body.style.cursor = 'auto'}>
-            <mesh>
+            <mesh name='bgMesh'>
               <boxGeometry args={[1.1, 0.4, 0.2]} />
               <meshBasicMaterial color="#222" />
               <Edges color="white" lineWidth={1} />
@@ -162,3 +181,7 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: 
 };
 
 export default ProjectTile;
+
+
+
+
